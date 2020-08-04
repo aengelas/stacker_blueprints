@@ -1,0 +1,41 @@
+{
+    "Outputs": {
+        "RoleArn": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "Role", 
+                    "Arn"
+                ]
+            }
+        }, 
+        "RoleName": {
+            "Value": {
+                "Ref": "Role"
+            }
+        }
+    }, 
+    "Resources": {
+        "Role": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ], 
+                            "Effect": "Allow", 
+                            "Principal": {
+                                "AWS": "arn:aws:iam::123456789012:user/JohnDoe"
+                            }
+                        }
+                    ]
+                }, 
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+                ], 
+                "Path": "/"
+            }, 
+            "Type": "AWS::IAM::Role"
+        }
+    }
+}

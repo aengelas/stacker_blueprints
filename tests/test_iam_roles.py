@@ -88,3 +88,37 @@ class TestIamEc2RoleBlueprint(TestIamRolesCommon):
         blueprint.resolve_variables(self.generate_variables())
         blueprint.create_template()
         self.assertRenderedBlueprint(blueprint)
+
+
+class TestIamRoleBlueprint(TestIamRolesCommon):
+
+    def test_role(self):
+        self.common_variables = {
+            'Path': '/',
+            'AttachedPolicies': [
+                'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess',
+            ],
+            'AssumeRole': [
+                'arn:aws:iam::123456789012:user/JohnDoe',
+            ],
+        }
+        blueprint = self.create_blueprint('test_iam_roles_iam_role', class_name=iam_roles.IAMRole)
+        blueprint.resolve_variables(self.generate_variables())
+        blueprint.create_template()
+        self.assertRenderedBlueprint(blueprint)
+
+    def test_role_name(self):
+        self.common_variables = {
+            'Name': 'myRole',
+            'Path': '/',
+            'AttachedPolicies': [
+                'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess',
+            ],
+            'AssumeRole': [
+                'arn:aws:iam::123456789012:user/JohnDoe',
+            ],
+        }
+        blueprint = self.create_blueprint('test_iam_roles_iam_role_name', class_name=iam_roles.IAMRole)
+        blueprint.resolve_variables(self.generate_variables())
+        blueprint.create_template()
+        self.assertRenderedBlueprint(blueprint)

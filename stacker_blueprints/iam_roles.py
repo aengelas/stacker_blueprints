@@ -8,7 +8,8 @@ from troposphere import (
     iam,
 )
 
-from awacs.aws import Policy
+from awacs.aws import Policy, Statement, Principal
+from awacs import sts
 from awacs.helpers.trust import (
     get_default_assumerole_policy,
     get_lambda_assumerole_policy
@@ -227,3 +228,74 @@ class Roles(RoleBaseBlueprint):
             self.create_lambda_role(role)
 
         self.create_policy()
+
+
+class IAMRole(Blueprint):
+    """
+    Blueprint to create an IAM role.
+
+    - class_path: stacker_blueprints.iam_roles.IAMRole
+      name: my-role
+        variables:
+          Name: myRole
+          Path: /
+          AttachedPolicies:
+            - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+          AssumeRole:
+            - arn:aws:iam::123456789012:user/JohnDoe
+    """
+    VARIABLES = {
+        "Name": {
+            "type": str,
+            "description": "The name of the role",
+            "default": "",
+        },
+        "Path": {
+            "type": str,
+            "description": "Provide the path",
+            "default": "/",
+        },
+        "AttachedPolicies": {
+            "type": list,
+            "description": "List of ARNs of policies to attach",
+            "default": [],
+        },
+        "AssumeRole": {
+            "type": list,
+            "description": "List of ARNs of entities allowed to assume this role",
+            "default": [],
+        },
+    }
+
+    def create_template(self):
+        variables = self.get_variables()
+
+        ar_policy = Policy(
+            Statement=[
+                Statement(
+                    Effect='Allow',
+                    Principal=Principal("AWS", p),
+                    Action=[
+                        sts.AssumeRole,
+                    ],
+                ) for p in variables['AssumeRole']
+            ]
+        )
+
+        role = self.template.add_resource(
+            iam.Role(
+                variables['Name'] if variables['Name'] != "" else "Role",
+                RoleName=variables['Name'],
+                Path=variables['Path'],
+                ManagedPolicyArns=variables['AttachedPolicies'],
+                AssumeRolePolicyDocument=ar_policy,
+            )
+        )
+
+        self.template.add_output(
+            Output("RoleName", Value=Ref(role))
+        )
+
+        self.template.add_output(
+            Output("RoleArn", Value=GetAtt(role.title, "Arn"))
+        )
