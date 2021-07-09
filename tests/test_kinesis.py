@@ -17,9 +17,7 @@ class TestBlueprint(BlueprintTestCase):
                         'KeyId': 'kms-1203123',
                     },
                 },
-                'Stream2': {
-                    'ShardCount': 4,
-                },
+                'Stream2': { },
             }),
             Variable('ReadRoles', [
                 'Role1',
